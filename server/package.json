@@ -6,10 +6,17 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
+    "@elysiajs/cors": "^1.4.2",
+    "@supabase/supabase-js": "^2.112.4",
+    "@t3-oss/env-core": "^0.13.11",
+    "elysia": "latest",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "typescript": "^7.0.2"
   },
   "module": "src/index.js"
 }

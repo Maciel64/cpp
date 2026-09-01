@@ -1,0 +1,7 @@
+# secrets — nunca commitar
+.env*
+*.local
+!.env.example
+
+# local agent config
+.opencode/
