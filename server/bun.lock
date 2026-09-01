@@ -10,11 +10,11 @@
         "@elysiajs/cors": "^1.4.2",
         "@supabase/supabase-js": "^2.112.4",
         "@t3-oss/env-core": "^0.13.11",
+        "@types/bun": "latest",
         "elysia": "latest",
         "zod": "^4.5.4",
       },
       "devDependencies": {
-        "@types/bun": "latest",
         "typescript": "^7.0.2",
       },
     },
