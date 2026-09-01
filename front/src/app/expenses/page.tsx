@@ -16,7 +16,7 @@ function ExpensesContent() {
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between gap-4"
+        className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
       >
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Despesas</h1>
@@ -24,8 +24,10 @@ function ExpensesContent() {
             Revise, confirme e acompanhe seus recibos.
           </p>
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-muted-foreground">{user?.email}</span>
+        <div className="flex items-center justify-between gap-4 text-sm sm:justify-start">
+          <span className="min-w-0 truncate text-muted-foreground">
+            {user?.email}
+          </span>
           <Button variant="outline" size="sm" onClick={() => void signOut()}>
             <LogOut className="mr-2 size-4" />
             Sair

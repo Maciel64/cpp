@@ -128,3 +128,34 @@
     @apply font-sans;
   }
 }
+
+/* ponytail: tabela de despesas vira cards empilhados em telas < 768px (md).
+   Cabeçalho some, cada <tr> vira um card com label via data-label. */
+.ecd-table {
+  @media (max-width: 47.99rem) {
+    th {
+      @apply hidden;
+    }
+    thead {
+      display: none;
+    }
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    tr {
+      @apply block rounded-xl border bg-card p-4 shadow-sm;
+    }
+    td {
+      @apply flex items-center justify-between gap-3 py-1.5 pl-0 pr-0 text-left whitespace-normal;
+    }
+    td[data-label]::before {
+      content: attr(data-label);
+      @apply text-sm text-muted-foreground;
+    }
+    td:nth-last-child(-n + 2) {
+      @apply pt-2;
+    }
+  }
+}

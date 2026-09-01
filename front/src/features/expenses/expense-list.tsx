@@ -83,14 +83,14 @@ export function ExpenseList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Select
           value={status}
           onValueChange={(value) => {
             update({ status: value as string, page: 1 });
           }}
         >
-          <SelectTrigger className="w-52">
+          <SelectTrigger className="w-full sm:w-52">
             <SelectValue placeholder="Status">
               {(value) => {
                 const s = typeof value === "string" ? value : "";
@@ -110,12 +110,12 @@ export function ExpenseList() {
           value={params.vendor}
           onChange={(e) => update({ vendor: e.target.value, page: 1 })}
           placeholder="Filtrar por fornecedor…"
-          className="max-w-56"
+          className="max-w-full sm:max-w-56"
         />
       </div>
 
       {isLoading && (
-        <div className="rounded-lg border">
+        <div className="ecd-table rounded-lg border md:overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -147,7 +147,7 @@ export function ExpenseList() {
                     <span className="block h-5 w-24 animate-pulse rounded-none bg-muted" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="ml-auto block h-3.5 w-14 animate-pulse rounded-none bg-muted" />
+                    <span className="ml-auto block h-14 w-20 animate-pulse rounded-md bg-muted" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -158,7 +158,7 @@ export function ExpenseList() {
       {isError && <p className="text-sm text-destructive">{error?.message}</p>}
 
       {data && (
-        <div className="rounded-lg border">
+        <div className="ecd-table rounded-lg border md:overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -202,18 +202,22 @@ export function ExpenseList() {
                   }}
                   className="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted"
                 >
-                  <TableCell>{e.vendor ?? "—"}</TableCell>
-                  <TableCell>{money(e.amount, e.currency)}</TableCell>
-                  <TableCell>{date(e.date)}</TableCell>
-                  <TableCell>
+                  <TableCell data-label="Fornecedor">
+                    {e.vendor ?? "—"}
+                  </TableCell>
+                  <TableCell data-label="Valor">
+                    {money(e.amount, e.currency)}
+                  </TableCell>
+                  <TableCell data-label="Data">{date(e.date)}</TableCell>
+                  <TableCell data-label="Confiança">
                     {e.confidence === null
                       ? "—"
                       : `${Math.round(e.confidence * 100)}%`}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label="Status">
                     <StatusBadge status={e.status} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" data-label="Ação">
                     <Link
                       href={`/expenses/${e.id}`}
                       className={buttonVariants({

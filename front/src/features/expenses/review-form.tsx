@@ -2,8 +2,8 @@
 
 import { ArrowLeft, Check } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import type { ExpenseStatus } from "@/types/expense";
 import { useConfirmExpense, useExpense, useReceiptUrl } from "./queries";
 import { StatusBadge } from "./status-badge";
-import Image from "next/image";
 
 function fmtDate(input: string | null): string {
   if (!input) return "";
@@ -50,7 +49,6 @@ export function ReviewForm({ id }: { id: string }) {
   const { data: expense, isLoading, isError } = useExpense(id);
   const { data: signedUrl } = useReceiptUrl(expense?.receipt_key ? id : null);
   const confirm = useConfirmExpense(id);
-  const router = useRouter();
 
   const [vendor, setVendor] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
@@ -96,7 +94,7 @@ export function ReviewForm({ id }: { id: string }) {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Link
           href="/expenses"
           aria-label="Voltar para a lista"
@@ -104,7 +102,9 @@ export function ReviewForm({ id }: { id: string }) {
         >
           <ArrowLeft className="size-4" />
         </Link>
-        <h1 className="text-xl font-semibold">{expense.vendor ?? "Despesa"}</h1>
+        <h1 className="min-w-0 flex-1 truncate text-xl font-semibold">
+          {expense.vendor ?? "Despesa"}
+        </h1>
         <StatusBadge status={expense.status} />
       </div>
 
