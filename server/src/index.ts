@@ -7,8 +7,12 @@ import { expensesPlugin } from "./plugins/expenses.plugin";
 import { AuthController } from "./http/controllers/auth.controller";
 import { ExpensesController } from "./http/controllers/expenses.controller";
 
+const allowedOrigins = env.FRONTEND_ORIGIN.split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 export const app = new Elysia()
-  .use(cors({ origin: env.FRONTEND_ORIGIN, credentials: true }))
+  .use(cors({ origin: allowedOrigins, credentials: true }))
   .onError(({ error, code, set }) => {
     if (error instanceof AppError) {
       set.status = error.status;

@@ -13,7 +13,10 @@ export const env = createEnv({
     B2_ENDPOINT: z.string().min(1),
     B2_PREFIX: z.string().default(""),
     PORT: z.coerce.number().default(3001),
-    FRONTEND_ORIGIN: z.url().default("http://localhost:3000"),
+    FRONTEND_ORIGIN: z
+      .string()
+      .default("http://localhost:3000")
+      .describe("comma-separated list of allowed origins"),
   },
   runtimeEnv: process.env,
 });
