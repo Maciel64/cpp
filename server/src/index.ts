@@ -7,7 +7,7 @@ import { expensesPlugin } from "./plugins/expenses.plugin";
 import { AuthController } from "./http/controllers/auth.controller";
 import { ExpensesController } from "./http/controllers/expenses.controller";
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(cors({ origin: env.FRONTEND_ORIGIN, credentials: true }))
   .onError(({ error, code, set }) => {
     if (error instanceof AppError) {
@@ -29,6 +29,5 @@ const app = new Elysia()
   .use(expensesPlugin)
   .use(AuthController)
   .use(ExpensesController)
-  .listen(env.PORT);
 
-console.log(`server listening on ${app.server?.hostname}:${app.server?.port}`);
+export default app;
