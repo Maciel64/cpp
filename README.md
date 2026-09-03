@@ -4,6 +4,8 @@ A lightweight tool for field employees to photograph a receipt, get
 vendor/date/amount extracted automatically, review and confirm the data, and
 keep the record for later approval and reporting.
 
+**Painel (produção):** https://painel.cpp.macielsuassunadev.com.br
+
 - **Frontend**: Next.js (App Router, React 19) + Tailwind CSS v4 + shadcn/ui. Installable PWA (manifest + app-shell service worker).
 - **Backend**: Node.js/TypeScript with Elysia + Bun, hexagonal architecture.
 - **Database/Auth/Storage**: Supabase (Postgres + RLS + Auth). Receipts stored on Backblaze B2 (S3-compatible).
