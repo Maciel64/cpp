@@ -1,6 +1,6 @@
 /* Receipt Capture PWA — manual service worker (ponytail: sem @serwist/precache build; add se precisar de precache de rotas dinâmicas) */
 const SHELL_CACHE = "cpp-shell-v1";
-const STATIC_CACHE = "cpp-static-v1";
+const STATIC_CACHE = "cpp-static-v2";
 const STATIC_RX = /^\/(_next\/static\/|icons\/)/;
 
 self.addEventListener("install", (event) => {
@@ -23,13 +23,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-async function cacheFirst(request) {
+async function staleWhileRevalidate(request) {
   const cache = await caches.open(STATIC_CACHE);
   const hit = await cache.match(request);
-  if (hit) return hit;
   const res = await fetch(request);
   if (res.ok) cache.put(request, res.clone());
-  return res;
+  return hit || res;
 }
 
 async function networkFirstNav(request) {
@@ -54,5 +53,5 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirstNav(req));
     return;
   }
-  if (STATIC_RX.test(url.pathname)) event.respondWith(cacheFirst(req));
+  if (STATIC_RX.test(url.pathname)) event.respondWith(staleWhileRevalidate(req));
 });
