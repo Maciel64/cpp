@@ -7,34 +7,41 @@ function base64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
 }
 
-// Reconhece moeda pelo símbolo presente no texto.
 function detectCurrency(text: string): string {
   if (/\$\s?US|USD/i.test(text)) return "USD";
-  return "BRL"; // BRL é o padrão da aplicação
+  return "BRL";
 }
 
-// Busca um valor monetário (ex.: R$ 123,45 / 123.45 / $ 12.00).
 function extractAmount(text: string): number | null {
-  const m = text.match(/(?:total|valor|amount|pagar|pago)\s*[:.-]?\s*(?:r\$\s*|\$\s*)([\d.,]+)/i)
-    || text.match(/(?:\b|r\$\s*|\$\s*)(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))/i);
-  if (!m) return null;
-  let raw = m[1] ?? m[0];
-  raw = raw.replace("R$", "").replace("$", "").trim();
-  // Última separação é decimal (pt-BR: vírgula, en: ponto); demais são milhar.
-  const last = raw.lastIndexOf(",");
-  const lastDot = raw.lastIndexOf(".");
-  if (last > lastDot) {
-    raw = raw.replace(/\./g, "").replace(",", ".");
-  } else if (lastDot > last) {
-    // 1.234,56 -> vírgula decimal (pt-BR)
-    if (/,\d{2}$/.test(raw)) raw = raw.replace(/\./g, "").replace(",", ".");
-    else raw = raw.replace(/,/g, "");
-  }
-  const amount = Number(raw);
-  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) / 100 : null;
+  const byKeyword =
+    text.match(/(?:total|valor|amount|pagar|pago)\s*[:.-]?\s*(?:r\$\s*|\$\s*)?([\d][\d.,]*)/i)?.[1] ??
+    null;
+  const fallback =
+    text.match(/(?:r\$\s*|\$\s*)([\d][\d.,]*)/i)?.[1] ??
+    text.match(/\b\$\s*([\d][\d.,]*)/i)?.[1] ??
+    text.match(/([\d][\d.,]*[.,]\d{2})\b/)?.[1] ??
+    null;
+
+  const raw = byKeyword ?? fallback;
+  if (raw == null) return null;
+  return parseMoney(raw);
 }
 
-// Busca data no formato DD/MM/YYYY (com ou sem zero), ou ISO.
+function parseMoney(raw: string): number | null {
+  let s = raw.trim().replace("R$", "").replace("$", "").trim();
+  const lastComma = s.lastIndexOf(",");
+  const lastDot = s.lastIndexOf(".");
+  if (lastComma > lastDot) {
+    if (/,\d{2}$/.test(s)) s = s.replace(/\./g, "").replace(",", ".");
+    else s = s.replace(/\.|,/g, "");
+  } else if (lastDot > lastComma) {
+    if (/\.\d{2}$/.test(s)) s = s.replace(/,/g, "");
+    else s = s.replace(/,|\./g, "");
+  }
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+}
+
 function extractDate(text: string): string | null {
   const m = text.match(/\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/);
   if (!m) return null;
@@ -46,7 +53,6 @@ function extractDate(text: string): string | null {
   return parsed.toISOString().slice(0, 10);
 }
 
-// Linhas "utilitárias" que nunca deveriam virar o nome do fornecedor.
 const NOISE = /^(total|subtotal|troco|item|qtd|valor|desconto|pagamento|cupom|n\.?\s?fiscal|cnpj|.*@.*|www\..*)$/i;
 
 function extractVendor(lines: string[]): string | null {
@@ -60,10 +66,6 @@ function extractVendor(lines: string[]): string | null {
   return null;
 }
 
-/**
- * Parseia o texto bruto extraído de um recibo e devolve os campos estruturados.
- * Função pura e testável, independente da chamada ao Google Vision.
- */
 export function parseReceiptText(text: string): OcrResult {
   const normalized = text.replace(/\r/g, "");
   const lines = normalized.split("\n");
@@ -75,7 +77,6 @@ export function parseReceiptText(text: string): OcrResult {
   const vendor = extractVendor(lines);
 
   const found = [amount !== null, date !== null, !!vendor].filter(Boolean).length;
-  // Campo-chave (valor) pesa mais; sem ele a confiança cai.
   const confidence = amount !== null ? 0.75 + found * 0.08 : 0.4 + found * 0.1;
 
   return {
@@ -87,11 +88,6 @@ export function parseReceiptText(text: string): OcrResult {
   };
 }
 
-/**
- * Adapter para o Google Vision (Document Text Detection).
- * Requer GOOGLE_VISION_API_KEY no ambiente. Sem chave configura reflete
- * uma falha (retry do use-case trata), mantendo o pipeline resiliente.
- */
 export class GoogleVisionOcrService implements OcrServicePort {
   constructor(
     private readonly apiKey: string,

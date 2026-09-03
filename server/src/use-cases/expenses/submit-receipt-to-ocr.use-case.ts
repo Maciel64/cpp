@@ -47,10 +47,10 @@ export class SubmitReceiptToOcrUseCase {
 
     return this.repo.insert({
       user_id: input.userId,
-      vendor: result.vendor,
-      amount: result.amount,
-      currency: result.currency,
-      date: result.date,
+      vendor: result.vendor || null,
+      amount: result.amount > 0 ? result.amount : null,
+      currency: result.currency || null,
+      date: result.date || null,
       receipt_key: key,
       confidence: result.confidence,
       status,

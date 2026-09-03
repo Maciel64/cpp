@@ -111,6 +111,18 @@ describe("SubmitReceiptToOcrUseCase", () => {
     expect(expense.status).toBe("needs_attention");
   });
 
+  test("campos ausentes (date/vendor vazios) -> insert com null, não string vazia", async () => {
+    const uc = new SubmitReceiptToOcrUseCase(
+      storage,
+      new StubOcr({ ok: true, result: { vendor: "", date: "", amount: 0, currency: "BRL", confidence: 0.95 } }),
+      repo,
+    );
+    await uc.execute({ userId: "u1", filename: "recibo.jpg", contentType: "image/jpeg", bytes: new Uint8Array(4) });
+    expect(inserted.date).toBeNull();
+    expect(inserted.vendor).toBeNull();
+    expect(inserted.amount).toBeNull();
+  });
+
   test("falha do OCR -> needs_attention com ocr_error", async () => {
     const uc = new SubmitReceiptToOcrUseCase(
       storage,
