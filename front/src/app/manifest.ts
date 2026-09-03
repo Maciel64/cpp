@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Capture de recibos com OCR simulado, revisão e confirmação de despesas.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F1FFDB",
-    theme_color: "#50F0C5",
+    background_color: "#FFFFFF",
+    theme_color: "#2D779E",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

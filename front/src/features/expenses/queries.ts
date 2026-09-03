@@ -36,11 +36,11 @@ export function useReceiptUrl(id: string | null) {
   });
 }
 
-export function useSubmitReceipt() {
+export function useSubmitReceipt(engine: "mock" | "google" = "mock") {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: File) => {
-      return api.submitReceipt(file);
+      return api.submitReceipt(file, engine);
     },
     onSuccess: (expense) => {
       queryClient.invalidateQueries({ queryKey: expenseKeys.all });

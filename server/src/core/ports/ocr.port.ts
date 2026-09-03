@@ -11,6 +11,6 @@ export type OcrOutcome =
   | { ok: false; reason: string };
 
 export interface OcrServicePort {
-  process(imageKey: string): Promise<OcrOutcome>;
+  process(image: Uint8Array): Promise<OcrOutcome>;
   isLowConfidence(outcome: OcrOutcome): boolean;
 }

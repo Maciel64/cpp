@@ -26,8 +26,7 @@ export class SubmitReceiptToOcrUseCase {
     const key = `receipts/${input.userId}/${randomUUID()}.${ext}`;
 
     await this.storage.upload(key, input.bytes, input.contentType);
-
-    const outcome = await this.processWithRetry(key);
+    const outcome = await this.processWithRetry(input.bytes);
 
     if (!outcome.ok) {
       return this.repo.insert({
@@ -59,10 +58,10 @@ export class SubmitReceiptToOcrUseCase {
     });
   }
 
-  private async processWithRetry(key: string): Promise<OcrOutcome> {
+  private async processWithRetry(image: Uint8Array): Promise<OcrOutcome> {
     let lastFailure: string | undefined;
     for (let attempt = 1; attempt <= this.maxAttempts; attempt++) {
-      const outcome = await this.ocr.process(key);
+      const outcome = await this.ocr.process(image);
       if (outcome.ok) return outcome;
       lastFailure = outcome.reason;
       if (attempt < this.maxAttempts) {

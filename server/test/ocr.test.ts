@@ -9,7 +9,7 @@ function sequence(...values: number[]): () => number {
 describe("MockOcrService", () => {
   test("ok:true com confiança alta -> isLowConfidence false", async () => {
     const ocr = new MockOcrService(sequence(0.5, 0.5, 0, 0, 0, 0.5, 0.99, 0));
-    const outcome = await ocr.process("k");
+    const outcome = await ocr.process(new Uint8Array(0));
     expect(outcome.ok).toBe(true);
     if (outcome.ok) {
       expect(outcome.result.confidence).toBeGreaterThanOrEqual(0.9);
@@ -20,7 +20,7 @@ describe("MockOcrService", () => {
 
   test("confiança baixa -> isLowConfidence true", async () => {
     const ocr = new MockOcrService(sequence(0.5, 0.5, 0, 0, 0, 0.5, 0.05, 0));
-    const outcome = await ocr.process("k");
+    const outcome = await ocr.process(new Uint8Array(0));
     expect(outcome.ok).toBe(true);
     if (outcome.ok) {
       expect(ocr.isLowConfidence(outcome)).toBe(true);
@@ -29,7 +29,7 @@ describe("MockOcrService", () => {
 
   test("falha -> ok:false com reason", async () => {
     const ocr = new MockOcrService(sequence(0.5, 0.01));
-    const outcome = await ocr.process("k");
+    const outcome = await ocr.process(new Uint8Array(0));
     expect(outcome.ok).toBe(false);
     if (!outcome.ok) expect(outcome.reason.length).toBeGreaterThan(0);
   });

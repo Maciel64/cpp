@@ -69,11 +69,18 @@ export const api = {
     }
   },
 
-  async submitReceipt(file: File): Promise<Expense> {
+  async submitReceipt(
+    file: File,
+    engine: "mock" | "google" = "mock",
+  ): Promise<Expense> {
     try {
       const body = new FormData();
       body.append("file", file);
-      const { data } = await http.post<Expense>("/expenses", body);
+      // ponytail: rota mock (/expenses) vs Google Vision (/expenses/ocr); default mock
+      const { data } = await http.post<Expense>(
+        engine === "google" ? "/expenses/ocr" : "/expenses",
+        body,
+      );
       return data;
     } catch (e) {
       return unwrap(e);

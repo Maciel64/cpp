@@ -16,12 +16,20 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useSubmitReceipt } from "./queries";
 
+export type OcrEngine = "mock" | "google";
+
+const ENGINE_OPTIONS: Array<{ value: OcrEngine; label: string }> = [
+  { value: "mock", label: "Simulado" },
+  { value: "google", label: "Google Vision" },
+];
+
 export function UploadForm() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [engine, setEngine] = useState<OcrEngine>("mock");
   const router = useRouter();
-  const submit = useSubmitReceipt();
+  const submit = useSubmitReceipt(engine);
 
   async function onSubmit(file: File) {
     setError(null);
@@ -51,6 +59,30 @@ export function UploadForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div
+            role="radiogroup"
+            aria-label="Motor de OCR"
+            className="grid grid-cols-2 gap-2 p-1"
+          >
+            {ENGINE_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={engine === opt.value}
+                variant={engine === opt.value ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "justify-center",
+                  engine !== opt.value && "text-muted-foreground",
+                )}
+                disabled={submit.isPending}
+                onClick={() => setEngine(opt.value)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
           <Input
             ref={inputRef}
             type="file"

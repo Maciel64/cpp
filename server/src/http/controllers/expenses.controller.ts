@@ -48,6 +48,22 @@ export const ExpensesController = new Elysia({ prefix: "/expenses" })
       body: t.Object({ file: t.File() }),
     },
   )
+  // OCR real via Google Vision — o frontend pode escolher entre este e o mock.
+  .post(
+    "/ocr",
+    async ({ body, user, submitToGoogleOcrUseCase }) => {
+      const bytes = new Uint8Array(await body.file.arrayBuffer());
+      return submitToGoogleOcrUseCase.execute({
+        userId: requireUser(user).user_id,
+        filename: body.file.name,
+        contentType: body.file.type || "application/octet-stream",
+        bytes,
+      });
+    },
+    {
+      body: t.Object({ file: t.File() }),
+    },
+  )
   .get(
     "/:id",
     ({ params, user, expensesRepository }) =>

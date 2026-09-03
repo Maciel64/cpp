@@ -3,6 +3,7 @@ import { authAdapter, authPlugin } from "./auth.plugin";
 import { SupabaseExpenseRepository } from "../adapters/supabase/expense.repository";
 import { BackblazeStorageAdapter } from "../adapters/storage/backblaze.storage";
 import { MockOcrService } from "../adapters/ocr/mock.ocr.service";
+import { GoogleVisionOcrService } from "../adapters/ocr/google-vision.ocr.service";
 import { ListExpensesUseCase } from "../use-cases/expenses/list-expenses.use-case";
 import { SubmitReceiptToOcrUseCase } from "../use-cases/expenses/submit-receipt-to-ocr.use-case";
 import { ConfirmExpenseUseCase } from "../use-cases/expenses/confirm-expense.use-case";
@@ -19,8 +20,13 @@ export const expensesPlugin = (app: Elysia) =>
     .use(ocrPlugin)
     .use(storagePlugin)
     .decorate("expensesRepository", repository)
-    .derive(({ ocrService, storageProvider, expensesRepository }) => ({
+    .derive(({ ocrMockService, ocrGoogleVisionService, storageProvider, expensesRepository }) => ({
       listExpensesUseCase: new ListExpensesUseCase(expensesRepository),
-      submitToOcrUseCase: new SubmitReceiptToOcrUseCase(storageProvider, ocrService, expensesRepository),
+      submitToOcrUseCase: new SubmitReceiptToOcrUseCase(storageProvider, ocrMockService, expensesRepository),
+      submitToGoogleOcrUseCase: new SubmitReceiptToOcrUseCase(
+        storageProvider,
+        ocrGoogleVisionService,
+        expensesRepository,
+      ),
       confirmExpenseUseCase: new ConfirmExpenseUseCase(expensesRepository),
     }));

@@ -17,7 +17,7 @@ export class MockOcrService implements OcrServicePort {
     this.rng = rng;
   }
 
-  async process(_imageKey: string): Promise<OcrOutcome> {
+  async process(_image: Uint8Array): Promise<OcrOutcome> {
     const rng = this.rng;
     const randInt = (min: number, max: number) => Math.floor(rng() * (max - min + 1)) + min;
 
