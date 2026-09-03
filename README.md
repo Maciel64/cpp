@@ -1,3 +1,7 @@
+<p align="left">
+  <img src="front/public/thumbnail.png" alt="Receipt Capture logo" width="120">
+</p>
+
 # Receipt Capture & Expense Tracker — PWA with OCR Pipeline
 
 A lightweight tool for field employees to photograph a receipt, get
