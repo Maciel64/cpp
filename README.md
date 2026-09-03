@@ -1,14 +1,13 @@
-# Receipt Capture & Expense Tracker — PWA with (simulated) OCR Pipeline
+# Receipt Capture & Expense Tracker — PWA with OCR Pipeline
 
-Technical assessment (Full Stack Engineer, TypeScript). A lightweight tool for
-field employees to photograph a receipt, get vendor/date/amount extracted
-automatically, review and confirm the data, and keep the record for later
-approval and reporting.
+A lightweight tool for field employees to photograph a receipt, get
+vendor/date/amount extracted automatically, review and confirm the data, and
+keep the record for later approval and reporting.
 
 - **Frontend**: Next.js (App Router, React 19) + Tailwind CSS v4 + shadcn/ui. Installable PWA (manifest + app-shell service worker).
 - **Backend**: Node.js/TypeScript with Elysia + Bun, hexagonal architecture.
 - **Database/Auth/Storage**: Supabase (Postgres + RLS + Auth). Receipts stored on Backblaze B2 (S3-compatible).
-- **OCR**: simulated/local stub with retries, low-confidence and failure modes.
+- **OCR**: pluggable engines — a simulated local stub (with retries, low-confidence and failure modes) and a real Google Vision adapter.
 
 ## Architecture
 
@@ -24,7 +23,7 @@ Server modules are organized by the hexagonal pattern:
 src/
   core/        entities, ports (interfaces), domain errors
   use-cases/   auth, expenses (OCR submit, confirm, list, status change)
-  adapters/    supabase (auth, repo), storage (B2), ocr (mock)
+  adapters/    supabase (auth, repo), storage (B2), ocr (mock + google vision)
   http/        controllers + auth middleware
   plugins/     Elysia plugin wiring
 ```
@@ -38,14 +37,13 @@ notification (email/push) plugs in — today it only logs.
 
 - **Auth**: sign up / log in / log out via Supabase Auth. Every expense route requires an authenticated user (server middleware + DB RLS).
 - **Receipt capture**: pick a file or upload from the phone camera; desktop falls back to a file picker.
-- **OCR pipeline (simulated)**: after upload the receipt is "processed" asynchronously — a short delay, then plausible fields plus a confidence score. The stub:
-  - returns extracted `vendor`, `date`, `amount`, `confidence` most of the time,
-  - occasionally returns a **low-confidence** result (→ `needs_attention`),
-  - occasionally **fails**, with automatic retries (up to 3 attempts, then `needs_attention` + `ocr_error`).
+- **OCR pipeline**: pluggable engines behind an `OcrServicePort`. Two adapters ship:
+  - **Mock (simulated)**: a short delay, then plausible fields plus a confidence score. It occasionally returns a **low-confidence** result (→ `needs_attention`), and occasionally **fails**, with automatic retries (up to 3 attempts, then `needs_attention` + `ocr_error`). This is the default and requires no external setup.
+  - **Google Vision (real)**: `POST /expenses/ocr` runs `DOCUMENT_TEXT_DETECTION` and parses the returned text (vendor/date/amount/currency). Requires `GOOGLE_VISION_API_KEY`; without it the endpoint fails safely into `needs_attention` + `ocr_error` after retries.
 - **Review & confirm**: extracted fields pre-fill a form; the user corrects and confirms. Once confirmed the fields are locked.
 - **Expense statuses**: `pending_review` → `confirmed`, `needs_attention` → `confirmed`. Transitions validated centrally.
 - **Query Options**: paginated, with filters by status and vendor.
-- **OCR engines**: submit goes to a simulated pipeline (`POST /expenses`). A real Google Vision pipeline is available at `POST /expenses/ocr` (requires `GOOGLE_VISION_API_KEY`); the frontend can switch with `useSubmitReceipt("google")`. Without a key the real endpoint fails safely into `needs_attention` + `ocr_error` after retries.
+- **OCR engine selection**: the frontend upload form lets you choose between the simulated and Google Vision engines (`useSubmitReceipt("mock" | "google")`).
 
 ## Project structure (monorepo)
 
@@ -132,17 +130,16 @@ organization's compliance requirements (e.g. `us-east-005` for the bucket in
 this repo's config). No data is processed or stored outside the regions you
 configure for those two services.
 
-## What I'd do with more time
+## Roadmap
 
 - **Real notifications**: wire the `status-change` notify seam to email/push
   instead of `console.log`.
 - **Edge Function for OCR trigger**: move the OCR-trigger step into a Supabase
-  Edge Function (bonus item), or an async job queue, instead of an inline await.
+  Edge Function, or an async job queue, instead of an inline await.
 - **Sharper receipt parsing**: the Google Vision parser is a heuristic on raw
   text; a provider with a built-in receipt model (AWS Textract `Expense`, Azure
   Document Intelligence `Receipt`) would extract fields more reliably.
 - **Capacitor wrap + native camera plugin** for a first-class camera experience.
-- **RIC/peered test coverage** for the use-cases (some exist under `server/test/`).
 - **App-shell precache** of dynamic routes via a build-time manifest (currently
   the service worker caches the shell + static assets only).
 - **Date-range filter** and sorting by status priority (needs_attention >
@@ -151,9 +148,10 @@ configure for those two services.
 ## Tests
 
 The server has unit tests under `server/test/` covering the domain use-cases
-(status transitions, OCR submit + retries, listing pagination/filter). Run with
-`bun test` in `server/` (see `server/README.md` / package.json).
+(status transitions, OCR submit + retries, receipt parsing, listing
+pagination/filter). Run with `bun test` in `server/` (see `server/README.md` /
+package.json).
 
 ## License
 
-Private — assessment submission.
+Private.
